@@ -1,12 +1,14 @@
 def strreverse():
-	F = input("Enter the string:")
-	S = " "
-	L = len(F)
-	for i in range(L,-1,-1):
-		if F[i-1].isalpha:
-			S = S+F[i-1]
-		else:
-			S = S+F[i-1]
-	print(S)
+    F = input("Enter the string: ")
+    letters = [F[i] for i in range(len(F)) if F[i].isalpha()]
+    result = []
+    letter_idx = len(letters) - 1
+	for ch in F:
+	     if ch.isalpha():
+            result.append(letters[letter_idx])
+            letter_idx -= 1
+        else:
+            result.append(ch)  
+	print(''.join(result))
 strreverse()
 			
