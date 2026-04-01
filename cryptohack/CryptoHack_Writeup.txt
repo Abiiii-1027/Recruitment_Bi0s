@@ -1,0 +1,201 @@
+
+         CRYPTOHACK — INTRODUCTORY CHALLENGES WRITE-UP
+                       Challenges 1 to 9
+
+
+CHALLENGE 1: Great Snakes (XOR with 50)
+Flag: (run the script below to get it)
+
+
+Concept:
+  The provided Python file is XOR-encrypted byte-by-byte with
+  the key 50. XOR is self-inverse: if C = P ^ K, then P = C ^ K.
+  So XORing the file again with 50 recovers the original.
+
+Solution:
+  In linux terminal navigate to the respective file folder and 
+  run the command python3 greatsnakes.py
+
+
+CHALLENGE 2: ASCII pr1nt4bl3
+Flag: crypto{ASCII_pr1nt4bl3}
+
+Concept:
+  Each number in the list is an ASCII code point.
+  chr() converts an integer to its corresponding character.
+  Joining all characters gives the flag.
+
+Solution:
+  flag = str()
+  ASC = [99, 114, 121, 112, 116, 111, 123, 65, 83, 67, 73, 73,
+         95, 112, 114, 49, 110, 116, 52, 98, 108, 51, 125]
+  for i in range(len(ASC)):
+      flag = flag + chr(ASC[i])
+  print(flag)
+
+
+CHALLENGE 3: You_will_be_working_with_hex_strings
+Flag: crypto{You_will_be_working_with_hex_strings}
+
+
+Concept:
+  Hex (base-16) represents each byte as two hex digits.
+  bytes.fromhex() decodes a hex string directly to bytes,
+  which when printed as ASCII reveals the flag.
+
+Solution:
+  hexstr = "63727970746f7b596f755f77696c6c5f62655f776f726b696e67" \
+           "5f776974685f6865785f737472696e67737d"
+  flag = bytes.fromhex(hexstr)
+  print(flag)
+
+
+CHALLENGE 4: Base64+Encoding+is+Web+Safe
+Flag: crypto/Base+64+Encoding+is+Web+Safe/
+
+
+Concept:
+  Base64 encodes binary data into 64 printable ASCII characters.
+  Here the hex string is decoded to raw bytes first, then
+  base64-encoded to produce the flag.
+
+Solution:
+  import base64
+  cph = "72bca9b68fc16ac7beeb8f849dca1d8a783e8acf9679bf9269f7bf"
+  bin = bytes.fromhex(cph)
+  flag = base64.b64encode(bin)
+  print(flag)
+
+
+CHALLENGE 5: 3nc0d1n6_4ll_7h3_w4y_d0wn
+Flag: crypto{3nc0d1n6_4ll_7h3_w4y_d0wn}
+
+
+Concept:
+  Cryptography often represents data as large integers (e.g. RSA).
+  long_to_bytes() converts the big integer back to its byte
+  (ASCII) representation by repeatedly extracting the lowest byte.
+
+Solution:
+  from Crypto.Util.number import long_to_bytes
+  flag = long_to_bytes(115151950630862318899931685488813747395775516287289\
+  68263649996528271463725920 6269)
+  print(flag)
+
+  
+
+CHALLENGE 6: aloha (XOR with 13)
+Flag: crypto{aloha}
+
+Concept:
+  Each character of the string "label" is XORed with 13.
+  ord() gets the ASCII value, XOR flips bits, chr() converts back.
+  This is like a Caesar cipher but using XOR instead of addition.
+
+Solution:
+  S = "label"
+  flag = ""
+  for i in S:
+      flag += chr(ord(i)^13)
+  print("crypto{",flag,"}")
+
+
+
+CHALLENGE 7: x0r_i5_ass0c1at1v3
+Flag: crypto{x0r_i5_ass0c1at1v3}
+
+
+Concept:
+  XOR is associative: A^B^C = C^B^A in any order.
+  We are given: K1, K1^K2, and K2^K3 as hex strings.
+  Step 1 — recover K2: K2 = K1 ^ (K1^K2)
+  Step 2 — recover K3: K3 = K2 ^ (K2^K3)
+  Step 3 — decrypt:    F  = C  ^ K1 ^ K2 ^ K3
+
+Solution:
+  KEY1 = "a6c8b6733c9b22de7bc0253266a3867df55acde8635e19c73313"
+  K1 = bytes.fromhex(KEY1)
+  K1K2 = "37dcb292030faa90d07eec17e3b1c6d8daf94c35d4c9191a5e1e"
+  KR = bytes.fromhex(K1K2)
+  K2 = bytes([a^b for a,b in zip(K1, KR)])
+  print("KEY2:", K2)
+
+  K2K3 = "c1545756687e7573db23aa1c3452a098b71a7fbf0fddddde5fc1"
+  KR1 = bytes.fromhex(K2K3)
+  K3 = bytes([c^d for c,d in zip(K2, KR1)])
+  print("KEY3:", K3)
+
+  flg = bytes.fromhex("04ee9855208a2cd59091d04767ae47963170d1660df7f56f5faf")
+  flag = bytes([e^f^g^h for e,f,g,h in zip(flg, K1, K2, K3)])
+  print(flag)
+
+
+
+CHALLENGE 8: 0x10_15_my_f4v0ur173_by7e
+Flag: crypto{0x10_15_my_f4v0ur173_by7e}
+
+
+Concept:
+  The ciphertext is XOR-encrypted with a single unknown byte.
+  Since the key is only 1 byte, there are only 256 possible keys.
+  We brute-force all 256 and check which one produces "crypto{"
+  at the start of the output. The winning key is 0x10 (16).
+
+Solution:
+        code:
+                st="73626960647f6b206821204f21254f7d694f7624662065622127234f726927756d"
+                cp = bytes.fromhex(st)
+                for i in range(256):
+                        flg =bytes(a^i for a in cp)
+                        print(flg)
+
+
+CHALLENGE 9: You either know, XOR you don't
+Flag: crypto{1f_y0u_Kn0w_En0uGH_y0u_Kn0w_1t_4ll}
+
+
+Concept:
+  This is a Known Plaintext Attack on XOR encryption.
+  Since we know the flag starts with "crypto{", we can XOR
+  that known plaintext against the ciphertext to recover
+  part of the key. The key then repeats (cycle) to decrypt
+  the full flag.
+
+Solution:
+  from itertools import cycle
+  st = "0e0b213f26041e480b26217f27342e175d0e070a3c5b103e2526217f27342e175d0e077e263451150104"
+  cp = bytes.fromhex(st)
+  key1 = "crypto{".encode()
+  print(cp)
+  print(key1)
+  key = bytes(a ^ b for a, b in zip(cp, key1))
+  print(key)
+
+  # key gives you the first 7 bytes of the secret key
+  # use cycle to repeat the key and decrypt the full ciphertext:
+  flag = bytes(a ^ b for a, b in zip(cp, cycle(key)))
+  print(flag)
+
+How it works step by step:
+  1. cp = the ciphertext bytes decoded from the hex string
+  2. key1 = b'crypto{' — we know the flag starts with this
+  3. Since ciphertext = plaintext ^ key, rearranging gives:
+         key = ciphertext ^ plaintext
+  4. XORing the first 7 bytes of cp with "crypto{" reveals
+     the first 7 bytes of the secret key
+  5. cycle(key) repeats those 7 bytes endlessly to match
+     the full length of the ciphertext
+  6. XORing cp with the cycled key decrypts the full flag
+
+
+
+  Challenge 1  : (XOR file bytes with 50 to reveal)
+  Challenge 2  : crypto{ASCII_pr1nt4bl3}
+  Challenge 3  : crypto{You_will_be_working_with_hex_strings}
+  Challenge 4  : crypto/Base+64+Encoding+is+Web+Safe/
+  Challenge 5  : crypto{3nc0d1n6_4ll_7h3_w4y_d0wn}
+  Challenge 6  : crypto{aloha}
+  Challenge 7  : crypto{x0r_i5_ass0c1at1v3}
+  Challenge 8  : crypto{0x10_15_my_f4v0ur173_by7e}  (key = 0x10)
+  CHALLENGE 9  : You either know, XOR you don't
+
